@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Garage Bartender API</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #f4f4f4;
+      margin: 0;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .card {
+      max-width: 700px;
+      margin: 0 auto;
+      background: #1d1d1d;
+      border: 1px solid #333;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 2rem;
+    }
+
+    .label {
+      color: #aaa;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+
+    .message {
+      font-size: 1.6rem;
+      line-height: 1.4;
+      margin: 25px 0;
+    }
+
+    button {
+      background: #f5a623;
+      color: #111;
+      border: none;
+      padding: 12px 18px;
+      margin: 8px;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #ffc15c;
+    }
+
+    pre {
+      background: #000;
+      color: #6aff6a;
+      text-align: left;
+      padding: 16px;
+      border-radius: 10px;
+      overflow-x: auto;
+      margin-top: 25px;
+    }
+
+    .small {
+      color: #999;
+      font-size: 0.85rem;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Garage Bartender</h1>
+
+    <div class="label" id="typeLabel">Greeting</div>
+    <div class="message" id="message">Loading...</div>
+
+    <div>
+      <button onclick="showRandom('greeting')">Random Greeting</button>
+      <button onclick="showRandom('joke')">Random Joke</button>
+      <button onclick="showRandom('all')">Surprise Me</button>
+    </div>
+
+    <pre id="jsonOutput"></pre>
+
+    <div class="small">
+      Try: <code>?type=greeting</code>, <code>?type=joke</code>, or <code>?format=json</code>
+    </div>
+  </div>
+
+  <script>
+    const greetings = [
+      "Welcome back, boss. The lights are on and the garage bar is open.",
+      "Welcome back. I saved your seat and judged your beer choice only a little.",
+      "Garage mode activated. Please blame the refs responsibly.",
+      "Welcome home. The bar is open, the vibes are set, and the outside world has been muted.",
+      "There he is. I turned the lights on and notified absolutely nobody.",
+      "Welcome back. Your garage kingdom awaits.",
+      "Good evening. The neon is warm, the fridge is cold, and hope remains questionable.",
+      "Welcome back. I kept the place exactly how you left it, mostly because I am software.",
+      "Garage Bartender online. Pull up a chair and act like this was productive.",
+      "Welcome back. The bar is open and the nonsense is complimentary."
+    ];
+
+    const jokes = [
+      "Why did the smart plug go to therapy? It had outlet issues.",
+      "I asked the beer fridge how it was doing. It said it was chilling.",
+      "A bourbon walks into a bar. The bartender says, neat.",
+      "Why did the garage get promoted? It had excellent overhead.",
+      "I told the Wi-Fi router a joke. It didn’t get it. Bad connection.",
+      "Why don’t football teams use smart lights? Too many false starts.",
+      "The Browns called. They said optimism is still under review.",
+      "Why did the Alexa routine break up with the smart bulb? It needed some space.",
+      "I cleaned the garage once. Then history corrected itself.",
+      "My smart home is very advanced. It ignores me in three different ecosystems."
+    ];
+
+    function getRandomItem(items) {
+      return items[Math.floor(Math.random() * items.length)];
+    }
+
+    function getRandomResponse(type) {
+      let selectedType = type;
+
+      if (!selectedType || selectedType === "all") {
+        selectedType = Math.random() > 0.5 ? "greeting" : "joke";
+      }
+
+      let speech;
+
+      if (selectedType === "joke") {
+        speech = getRandomItem(jokes);
+      } else {
+        selectedType = "greeting";
+        speech = getRandomItem(greetings);
+      }
+
+      return {
+        source: "Garage Bartender",
+        type: selectedType,
+        speech: speech,
+        timestampUtc: new Date().toISOString()
+      };
+    }
+
+    function renderResponse(response) {
+      document.getElementById("typeLabel").textContent =
+        response.type === "joke" ? "Joke" : "Greeting";
+
+      document.getElementById("message").textContent = response.speech;
+
+      document.getElementById("jsonOutput").textContent =
+        JSON.stringify(response, null, 2);
+    }
+
+    function showRandom(type) {
+      const response = getRandomResponse(type);
+      renderResponse(response);
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("type", type);
+      window.history.replaceState({}, "", url);
+    }
+
+    function init() {
+      const params = new URLSearchParams(window.location.search);
+      const type = params.get("type") || "greeting";
+      const format = params.get("format");
+
+      const response = getRandomResponse(type);
+
+      // Fake API mode for browser/testing.
+      // GitHub Pages cannot send real application/json headers,
+      // but this displays JSON cleanly if you want a pseudo-endpoint.
+      if (format === "json") {
+        document.body.innerHTML = "<pre>" + JSON.stringify(response, null, 2) + "</pre>";
+        return;
+      }
+
+      renderResponse(response);
+    }
+
+    init();
+  </script>
+</body>
+</html>
